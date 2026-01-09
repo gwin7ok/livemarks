@@ -78,6 +78,10 @@ const LivemarkStore = {
       feedUrl: feed.feedUrl,
       maxItems: feed.maxItems,
     };
+    // Preserve title when provided so UI ordering remains stable after rebind/add
+    if (feed.title) {
+      feedDetails.title = feed.title;
+    }
     if (feed.siteUrl) {
       feedDetails.siteUrl = new URL(feed.siteUrl, feed.feedUrl).href;
     } else {
@@ -147,8 +151,8 @@ const LivemarkStore = {
     await browser.storage.sync.set({ [toInternalId(id)]: oldFeed });
   },
 
-  async _makeDetails(id, { feedUrl, siteUrl, maxItems, updated, lastError }, { readPrefix, unreadPrefix }) {
-    let title = "";
+  async _makeDetails(id, { feedUrl, siteUrl, maxItems, updated, lastError, title: storedTitle }, { readPrefix, unreadPrefix }) {
+    let title = storedTitle || "";
     let parentId = null;
     let folderMissing = false;
 
@@ -158,7 +162,8 @@ const LivemarkStore = {
       if (!bookmark) {
         folderMissing = true;
       } else {
-        title = bookmark.title || "";
+        // If no stored title, fall back to bookmark title
+        if (!title) title = bookmark.title || "";
         parentId = bookmark.parentId || null;
       }
     } catch (e) {
@@ -279,7 +284,25 @@ const LivemarkStore = {
       }
 
       if (changedKeys.length > 0) {
-        this.listeners.forEach(listener => listener({ changedKeys }));
+        console.log('[Livemarks] storage.onChanged detected keys', changedKeys, 'rawChanges:', changes);
+        this.listeners.forEach(listener => {
+          try {
+            listener({ changedKeys });
+          } catch (e) {
+            console.error('[Livemarks] listener threw', e);
+          }
+        });
+
+        // Also notify background via runtime message to ensure the updater
+        // running in the background context receives the change even if its
+        // local listener did not run for any reason.
+        try {
+          if (browser && browser.runtime && typeof browser.runtime.sendMessage === 'function') {
+            browser.runtime.sendMessage({ msg: 'livemarks.changed', changedKeys }).catch(() => { });
+          }
+        } catch (e) {
+          // ignore failures
+        }
       }
     });
   }

@@ -88,21 +88,35 @@ const LivemarkUpdater = {
 
     this.isUpdating = true;
 
+    console.log('[Livemarks] updateAllLivemarks called; changedKeys=', changedKeys);
+
     const livemarks = await LivemarkStore.getAll();
 
+    // If specific keys changed, only update those feeds rather than all.
+    // This lets additions trigger a single-feed update instead of a full
+    // refresh.
+    let toUpdate = livemarks;
+    if (Array.isArray(changedKeys) && changedKeys.length > 0) {
+      const filtered = livemarks.filter(f => changedKeys.includes(f.id));
+      if (filtered.length > 0) {
+        toUpdate = filtered;
+      }
+    }
+
     const next = () => {
-      const feed = livemarks.pop();
+      const feed = toUpdate.pop();
       if (feed) {
         this.updateLivemark(feed, {
-          forceUpdate: changedKeys.includes(feed.id),
+          forceUpdate: Array.isArray(changedKeys) && changedKeys.includes(feed.id),
         }).finally(next);
       }
     };
 
     // Only update at most 5 livemarks concurrently.
-    livemarks.splice(0, 5).forEach(feed => {
+    console.log('[Livemarks] feeds to update:', toUpdate.map(f => f.id));
+    toUpdate.splice(0, 5).forEach(feed => {
       this.updateLivemark(feed, {
-        forceUpdate: changedKeys.includes(feed.id),
+        forceUpdate: Array.isArray(changedKeys) && changedKeys.includes(feed.id),
       }).finally(next);
     });
 
@@ -479,6 +493,16 @@ const FeedPreview = {
 const tabIdToFeeds = {};
 
 browser.runtime.onMessage.addListener(async (request, sender) => {
+  if (request && request.msg === 'livemarks.changed') {
+    try {
+      console.log('[Livemarks] background received livemarks.changed', request.changedKeys);
+      await LivemarkUpdater.updateAllLivemarks({ changedKeys: request.changedKeys });
+      return { ok: true };
+    } catch (e) {
+      console.error('[Livemarks] handling livemarks.changed failed', e);
+      return { ok: false, error: String(e) };
+    }
+  }
   if (request.msg == "feeds") {
     // We have received a list of feed urls found on the page.
     // Enable the page action icon.

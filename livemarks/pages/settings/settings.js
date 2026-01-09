@@ -337,11 +337,18 @@ async function showEditFeedDialog(feed) {
   // (親フォルダー表示は省略しています — 表示が紛らわしいため)
 
   // Wire the change button to open the parent-folder selector dialog
+  // The parent-folder "変更" feature was removed as it caused confusion.
   const changeBtn = dialog.querySelector('#change-parent-button');
-  changeBtn.onclick = (e) => {
-    e.preventDefault();
-    showChangeParentDialog(feed);
-  };
+  if (changeBtn) changeBtn.style.display = 'none';
+
+  // Wire the rebind button to open the rebind dialog
+  const viewBtn = dialog.querySelector('#view-folder-button');
+  if (viewBtn) {
+    viewBtn.onclick = (e) => {
+      e.preventDefault();
+      showSelectFolderDialog(feed);
+    };
+  }
 
   const deleteButton = dialog.querySelector(".delete");
   deleteButton.onclick = async (e) => {
@@ -366,121 +373,289 @@ async function showEditFeedDialog(feed) {
   toggleDialog(dialog.id, true);
 }
 
-// Open the folder selector to change the parent of an existing feed folder.
-async function showChangeParentDialog(feed) {
-  const dialog = document.querySelector("#select-folder-dialog");
-
-  toggleDialog(dialog.id, false);
-
-  await populateFolderSelector(dialog.livemarkFolder, true);
-
-  // Store the feed id on the dialog so submit handler knows what to edit.
-  dialog.dataset.changingFeed = feed.id;
-
-  const deleteButton = dialog.querySelector(".delete");
-  deleteButton.onclick = async (e) => {
-    e.preventDefault();
-    toggleDialog(dialog.id, false);
-    await LivemarkStore.remove(feed.id);
-  };
-
-  dialog.onsubmit = async (e) => {
-    e.preventDefault();
-    const valid = dialog.reportValidity();
-    if (valid) {
-      toggleDialog(dialog.id, false);
-      const newParentId = dialog.livemarkFolder.value;
-      await LivemarkStore.edit(feed.id, { parentId: newParentId });
-      // Update the edit dialog display if still open: refresh displayed feed-folder name
-      const editDialog = document.querySelector('#edit-livemark-dialog');
-      if (!editDialog.hidden) {
-        try {
-          const [bookmark] = await browser.bookmarks.get(feed.id).catch(() => []);
-          editDialog.querySelector('[name="currentFeedFolder"]').value = bookmark && bookmark.title ? bookmark.title : feed.title;
-        } catch (e) {
-          editDialog.querySelector('[name="currentFeedFolder"]').value = feed.title;
-        }
-      }
-    }
-  };
-
-  toggleDialog(dialog.id, true);
-}
+// NOTE: parent-change and rebind features removed — folder UI is display-only.
 
 async function showSelectFolderDialog(feed) {
   const dialog = document.querySelector("#select-folder-dialog");
 
   toggleDialog(dialog.id, false);
 
-  await populateFolderSelector(dialog.livemarkFolder, true);
-
-  const deleteButton = dialog.querySelector(".delete");
-  deleteButton.onclick = async (e) => {
-    e.preventDefault();
-    toggleDialog(dialog.id, false);
-    await LivemarkStore.remove(feed.id);
-  };
-
-  dialog.onsubmit = async (e) => {
-    e.preventDefault();
-
-    const valid = dialog.reportValidity();
-    if (valid) {
-      toggleDialog(dialog.id, false);
-
-      await LivemarkStore.remove(feed.id);
-      await LivemarkStore.addWithBookmark(dialog.livemarkFolder.value, feed);
-    }
-  };
-
+  // Render the full tree in view-only mode (no selection / no submit).
+  await populateFolderSelector(dialog.querySelector('#livemarkFolderTree'), true, feed.parentId, true);
   toggleDialog(dialog.id, true);
 }
 
 async function populateFolderSelector(folderSelector, removeBuiltin = false) {
-  const allFolders = await getAllBookmarkFolders();
-  const readPrefix = await Settings.getReadPrefix();
-  const unreadPrefix = await Settings.getUnreadPrefix();
-  folderSelector.textContent = "";
-  folderSelector.append(...allFolders.filter(folder => {
-    if (removeBuiltin) {
-      const builtinIds = ["toolbar_____", "menu________", "unfiled_____", "mobile______"];
-      return !builtinIds.includes(folder.id);
+  // Legacy: if a <select> is provided, keep existing behavior
+  if (folderSelector && folderSelector.tagName === 'SELECT') {
+    const allFolders = await getAllBookmarkFolders();
+    const readPrefix = await Settings.getReadPrefix();
+    const unreadPrefix = await Settings.getUnreadPrefix();
+    folderSelector.textContent = "";
+    folderSelector.append(...allFolders.filter(folder => {
+      if (removeBuiltin) {
+        const builtinIds = ["toolbar_____", "menu________", "unfiled_____", "mobile______"];
+        return !builtinIds.includes(folder.id);
+      }
+      return true;
+    }).map(folder => {
+      const option = document.createElement("option");
+      option.value = folder.id;
+
+      let title = folder.title;
+      title = PrefixUtils.removePrefix(readPrefix, title);
+      title = PrefixUtils.removePrefix(unreadPrefix, title);
+
+      option.textContent = title;
+      return option;
+    }));
+    const ensureId = arguments.length >= 3 ? arguments[2] : null;
+    if (ensureId) {
+      if (!Array.from(folderSelector.options).some(o => o.value === ensureId)) {
+        try {
+          const [node] = await browser.bookmarks.get(ensureId);
+          if (node && node.id) {
+            const option = document.createElement('option');
+            option.value = node.id;
+            option.textContent = node.title || node.id;
+            folderSelector.insertBefore(option, folderSelector.firstChild);
+          }
+        } catch (e) { }
+      }
+      folderSelector.value = ensureId;
+    } else {
+      folderSelector.value = await Settings.getDefaultFolder();
     }
+    return;
+  }
 
-    return true;
-  }).map(folder => {
-    const option = document.createElement("option");
-    option.value = folder.id;
+  // New behavior: if a folder-tree container is provided, render nested tree
+  const viewOnly = arguments.length >= 4 ? arguments[3] : false;
 
-    let title = folder.title;
-    title = PrefixUtils.removePrefix(readPrefix, title);
-    title = PrefixUtils.removePrefix(unreadPrefix, title);
+  if (folderSelector && folderSelector.classList && folderSelector.classList.contains('folder-tree')) {
+    const rootTree = await browser.bookmarks.getTree();
+    const livemarksFolders = (await LivemarkStore.getAll()).map(l => l.id);
 
-    option.textContent = title;
-    return option;
-  }));
-  // If caller requested, ensure a particular folder id is present and selected.
-  // The third argument may be provided as `ensureId` via arguments[2].
-  const ensureId = arguments.length >= 3 ? arguments[2] : null;
-  if (ensureId) {
-    // If not already present in the options, try to load it and add it as the first option.
-    if (!Array.from(folderSelector.options).some(o => o.value === ensureId)) {
-      try {
-        const [node] = await browser.bookmarks.get(ensureId);
-        if (node && node.id) {
-          const option = document.createElement('option');
-          option.value = node.id;
-          option.textContent = node.title || node.id;
-          folderSelector.insertBefore(option, folderSelector.firstChild);
+    const createNode = (node) => {
+      if (!node || node.type !== 'folder' || !node.id) return null;
+
+      const li = document.createElement('li');
+      li.dataset.id = node.id;
+      const toggle = document.createElement('span');
+      toggle.className = 'toggle';
+      toggle.textContent = (node.children && node.children.length > 0) ? '▸' : '';
+      li.appendChild(toggle);
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = node.title || '(無題)';
+      li.appendChild(label);
+
+      if (node.children && node.children.length > 0) {
+        const ul = document.createElement('ul');
+        for (const c of node.children) {
+          const childLi = createNode(c);
+          if (childLi) ul.appendChild(childLi);
         }
-      } catch (e) {
-        // ignore if bookmark not found
+        if (ul.children.length > 0) {
+          li.appendChild(ul);
+          ul.style.display = 'none';
+          toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (ul.style.display === 'none' || ul.style.display === '') {
+              ul.style.display = 'block';
+              toggle.textContent = '▾';
+            } else {
+              ul.style.display = 'none';
+              toggle.textContent = '▸';
+            }
+          });
+        }
+      }
+
+      // If this node is a livemark folder (a feed's folder), mark it visually but
+      // do not allow it to be chosen as a parent target. Still allow expanding.
+      const isLivemark = livemarksFolders.includes(node.id);
+      if (isLivemark) {
+        li.classList.add('livemark-node');
+      }
+
+      if (!viewOnly) {
+        li.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // If node has children, toggle expand on label click as well
+          const childUl = li.querySelector('ul');
+          if (childUl) {
+            const t = li.querySelector('.toggle');
+            if (childUl.style.display === 'none' || childUl.style.display === '') {
+              childUl.style.display = 'block';
+              if (t) t.textContent = '▾';
+            } else {
+              childUl.style.display = 'none';
+              if (t) t.textContent = '▸';
+            }
+          }
+
+          // Only allow selection of non-livemark folders as parent targets
+          if (!isLivemark) {
+            const prev = folderSelector.querySelector('li.selected');
+            if (prev) prev.classList.remove('selected');
+            li.classList.add('selected');
+            const hidden = folderSelector.parentElement.querySelector('input[name="livemarkFolder"]');
+            if (hidden) hidden.value = li.dataset.id;
+          }
+        });
+      } else {
+        // In viewOnly mode, just allow expand/collapse when clicking the toggle element
+        const toggleClick = (e) => {
+          e.stopPropagation();
+          const childUl = li.querySelector('ul');
+          if (childUl) {
+            const t = li.querySelector('.toggle');
+            if (childUl.style.display === 'none' || childUl.style.display === '') {
+              childUl.style.display = 'block';
+              if (t) t.textContent = '▾';
+            } else {
+              childUl.style.display = 'none';
+              if (t) t.textContent = '▸';
+            }
+          }
+        };
+        const t = li.querySelector('.toggle');
+        if (t) t.addEventListener('click', toggleClick);
+      }
+
+      return li;
+    };
+
+    folderSelector.textContent = '';
+    const containerUl = document.createElement('ul');
+    for (const top of rootTree) {
+      if (!top.children) continue;
+      for (const child of top.children) {
+        const li = createNode(child);
+        if (li) containerUl.appendChild(li);
       }
     }
-    folderSelector.value = ensureId;
-  } else {
-    folderSelector.value = await Settings.getDefaultFolder();
+    folderSelector.appendChild(containerUl);
+
+    const ensureId = arguments.length >= 3 ? arguments[2] : null;
+    if (ensureId) {
+      const target = folderSelector.querySelector(`li[data-id="${ensureId}"]`);
+      if (target) {
+        let node = target.parentElement;
+        while (node && node !== folderSelector) {
+          if (node.tagName === 'UL') {
+            node.style.display = 'block';
+            const parentLi = node.parentElement;
+            if (parentLi) {
+              const t = parentLi.querySelector('.toggle');
+              if (t) t.textContent = '▾';
+            }
+          }
+          node = node.parentElement;
+        }
+        target.classList.add('selected');
+        const hidden = folderSelector.parentElement.querySelector('input[name="livemarkFolder"]');
+        if (hidden) hidden.value = ensureId;
+      }
+    } else {
+      const defaultId = await Settings.getDefaultFolder();
+      const defNode = folderSelector.querySelector(`li[data-id="${defaultId}"]`);
+      if (defNode) {
+        defNode.classList.add('selected');
+        const hidden = folderSelector.parentElement.querySelector('input[name="livemarkFolder"]');
+        if (hidden) hidden.value = defaultId;
+      }
+    }
+    return;
   }
+}
+
+// Create an inline input under the currently selected folder to create a new folder
+async function enableInlineNewFolder(dialog) {
+  const tree = dialog.querySelector('#livemarkFolderTree');
+  if (!tree) return;
+
+  // Use selected node as parent; if none, fallback to default folder
+  let parentId = dialog.querySelector('input[name="livemarkFolder"]').value;
+  if (!parentId) {
+    parentId = await Settings.getDefaultFolder();
+  }
+
+  // Find the LI for parent to insert under it
+  const parentLi = tree.querySelector(`li[data-id="${parentId}"]`);
+  const container = parentLi ? parentLi : tree;
+
+  // Prevent multiple inputs
+  if (container.querySelector('.new-folder-input')) return;
+
+  const tempLi = document.createElement('li');
+  tempLi.className = 'new-folder-input';
+  tempLi.style.padding = '3px';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = '新しいフォルダー名';
+  input.style.width = '60%';
+  tempLi.appendChild(input);
+
+  // If parentLi exists, append under its UL (create if necessary)
+  if (parentLi) {
+    let ul = parentLi.querySelector('ul');
+    if (!ul) {
+      ul = document.createElement('ul');
+      parentLi.appendChild(ul);
+    }
+    ul.style.display = 'block';
+    const toggle = parentLi.querySelector('.toggle');
+    if (toggle) toggle.textContent = '▾';
+    ul.insertBefore(tempLi, ul.firstChild);
+  } else {
+    tree.insertBefore(tempLi, tree.firstChild);
+  }
+
+  input.focus();
+
+  const cleanup = () => {
+    if (tempLi && tempLi.parentElement) tempLi.parentElement.removeChild(tempLi);
+  };
+
+  const createFolder = async (name) => {
+    if (!name || !name.trim()) {
+      cleanup();
+      return;
+    }
+    try {
+      const created = await browser.bookmarks.create({ title: name.trim(), parentId });
+      // re-render tree and select the new folder
+      await populateFolderSelector(tree, true, created.id);
+    } catch (e) {
+      console.error('[Livemarks] failed to create folder', e);
+      alert('フォルダの作成に失敗しました。コンソールを確認してください。');
+    }
+  };
+
+  input.addEventListener('keydown', async (ev) => {
+    if (ev.key === 'Enter') {
+      await createFolder(input.value);
+      // If the dialog is in a rebind/change flow, trigger its submit handler
+      try {
+        if (dialog.dataset.rebindingFeed || dialog.dataset.changingFeed) {
+          if (typeof dialog.requestSubmit === 'function') {
+            dialog.requestSubmit();
+          } else if (typeof dialog.onsubmit === 'function') {
+            dialog.onsubmit(new Event('submit'));
+          }
+        }
+      } catch (e) {
+        console.warn('[Livemarks] failed to auto-submit after folder creation', e);
+      }
+    } else if (ev.key === 'Escape') {
+      cleanup();
+    }
+  });
+
+  // blur also cleans up (but give small delay for Enter handler)
+  input.addEventListener('blur', () => setTimeout(cleanup, 150));
 }
 
 function toggleDialog(id, shown) {

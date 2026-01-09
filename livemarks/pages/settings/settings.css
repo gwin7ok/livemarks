@@ -220,3 +220,48 @@ main>* {
 #orangeIcon {
   background-image: url(../../icons/feed-orange.svg);
 }
+
+/* Folder tree styles */
+.folder-tree {
+  max-height: 30vh;
+  overflow: auto;
+  border: 1px solid var(--grey-90-a30);
+  background: var(--card-background);
+  padding: 6px;
+}
+
+.folder-tree ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0.8em;
+}
+
+.folder-tree li {
+  padding: 3px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.folder-tree li .label {
+  display: inline-block;
+}
+
+.folder-tree li.selected {
+  background: var(--button-background-hover);
+}
+
+.folder-tree li .toggle {
+  display: inline-block;
+  width: 1.2em;
+  text-align: center;
+  margin-right: 0.2em;
+}
+
+.folder-tree li.livemark-node {
+  font-style: italic;
+  color: var(--deemphasized-text-color);
+}
+
+.folder-tree li.livemark-node .label {
+  opacity: 0.9;
+}
