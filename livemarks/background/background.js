@@ -501,6 +501,18 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     return FeedParser.getFeed(request.feedUrl);
   }
 
+  if (request.msg == "triggerUpdate") {
+    try {
+      // Trigger an immediate update run. The updater serializes concurrent
+      // runs internally.
+      await LivemarkUpdater.updateAllLivemarks();
+      return { ok: true };
+    } catch (e) {
+      console.error("[Livemarks] triggerUpdate failed", e);
+      return { ok: false, error: String(e) };
+    }
+  }
+
   if (request.msg == "subscribe") {
     const { title, feedUrl, siteUrl } = request;
     const folderId = await Settings.getDefaultFolder();

@@ -79,6 +79,27 @@ window.onload = async () => {
   document.getElementById("settings-toggle")
     .addEventListener("click", showSettingsDialog);
 
+  const updateNowBtn = document.getElementById("update-now");
+  if (updateNowBtn) {
+    updateNowBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      updateNowBtn.disabled = true;
+      const oldText = updateNowBtn.textContent;
+      updateNowBtn.textContent = "更新中...";
+      try {
+        await browser.runtime.sendMessage({ msg: "triggerUpdate" });
+        // Optionally inform the user that the update was requested.
+        alert(I18N.getMessage ? I18N.getMessage("settings_updateStarted") : "フィード更新を開始しました。");
+      } catch (err) {
+        console.error("[Livemarks] manual update request failed", err);
+        alert(I18N.getMessage ? I18N.getMessage("settings_updateFailed") : "フィード更新の要求に失敗しました。");
+      } finally {
+        updateNowBtn.disabled = false;
+        updateNowBtn.textContent = oldText;
+      }
+    });
+  }
+
   document.getElementById("import-feeds").addEventListener("change", (event) => {
     const [file] = event.target.files;
     const reader = new FileReader();
