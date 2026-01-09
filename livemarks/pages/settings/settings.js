@@ -79,6 +79,18 @@ window.onload = async () => {
   document.getElementById("settings-toggle")
     .addEventListener("click", showSettingsDialog);
 
+  // Toggle: show feeds with errors first
+  window.showErrorsFirst = false;
+  const errorsFirstBtn = document.getElementById("errors-first-toggle");
+  if (errorsFirstBtn) {
+    errorsFirstBtn.addEventListener("click", (e) => {
+      window.showErrorsFirst = !window.showErrorsFirst;
+      errorsFirstBtn.classList.toggle("active", window.showErrorsFirst);
+      errorsFirstBtn.textContent = window.showErrorsFirst ? "エラーを先頭に表示：ON" : "エラーを先頭に表示";
+      loadFeeds();
+    });
+  }
+
   const updateNowBtn = document.getElementById("update-now");
   if (updateNowBtn) {
     updateNowBtn.addEventListener("click", async (e) => {
@@ -198,19 +210,32 @@ async function loadFeeds() {
   console.log("[Livemarks] settings.loadFeeds start");
   toggleDialog("settings-dialog", false);
   toggleDialog("edit-livemark-dialog", false);
-  const broken = [];
-  const allFeeds = await LivemarkStore.getAll(broken);
+  const allFeeds = await LivemarkStore.getAll();
   document.getElementById("feeds").textContent = "";
-  allFeeds.sort((a, b) => {
-    return a.title.localeCompare(b.title);
-  }).forEach(feed => addFeedToList(feed, false));
+
+  // Sort alphabetically by title for deterministic order.
+  allFeeds.sort((a, b) => a.title.localeCompare(b.title));
+
+  // Feeds with a stored `lastError` should be considered "errored".
+  const errorFeeds = allFeeds.filter(f => f && f.lastError);
+  const normalFeeds = allFeeds.filter(f => !(f && f.lastError));
+
+  if (window.showErrorsFirst) {
+    errorFeeds.forEach(feed => {
+      // Use a localized title for errored items if available.
+      feed.title = I18N && I18N.getMessage ? I18N.getMessage("settings_brokenLivemark") : feed.title;
+      addFeedToList(feed, true);
+    });
+    normalFeeds.forEach(feed => addFeedToList(feed, false));
+  } else {
+    normalFeeds.forEach(feed => addFeedToList(feed, false));
+    errorFeeds.forEach(feed => {
+      feed.title = I18N && I18N.getMessage ? I18N.getMessage("settings_brokenLivemark") : feed.title;
+      addFeedToList(feed, true);
+    });
+  }
 
   console.log("[Livemarks] settings.loadFeeds completed: feedsCount=", allFeeds.length);
-
-  broken.forEach((feed) => {
-    feed.title = I18N.getMessage("settings_brokenLivemark");
-    addFeedToList(feed, true);
-  });
 }
 
 function addFeedToList(feed, broken = false) {
