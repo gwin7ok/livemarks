@@ -140,8 +140,11 @@
     </div>
     <div class="flex">
       <div class="form-row grow">
-        <label for="parentId" data-i18n-text="editLivemark_parentFolder"></label>
-        <select name="parentId" required></select>
+        <label>フォルダー</label>
+        <div class="flex">
+          <input name="currentFeedFolder" readonly class="grow" aria-label="フィードフォルダ名">
+          <button id="change-parent-button" type="button" class="button">変更</button>
+        </div>
       </div>
       <div class="form-row">
         <label for="maxItems" data-i18n-text="editLivemark_maxItems"></label>

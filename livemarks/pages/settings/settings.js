@@ -167,7 +167,9 @@ async function showSettingsDialog() {
 
   settingsForm.prefixParentFolders.disabled = !settingsForm.prefixFeedFolder.checked;
 
-  await populateFolderSelector(settingsForm.defaultFolder);
+  // Ensure the stored default folder (if any) appears in the selector
+  const storedDefault = await Settings.getDefaultFolder();
+  await populateFolderSelector(settingsForm.defaultFolder, false, storedDefault);
 
   const allFeeds = await LivemarkStore.getAll();
   const exportLink = document.getElementById("export-feeds");
@@ -318,14 +320,28 @@ async function showEditFeedDialog(feed) {
   // Prevent race conditions
   toggleDialog(dialog.id, false);
 
-  await populateFolderSelector(dialog.parentId);
-
   const { title, feedUrl, siteUrl, parentId, maxItems, id } = feed;
   dialog.title.value = title;
   dialog.feedUrl.value = feedUrl;
   dialog.siteUrl.value = siteUrl;
-  dialog.parentId.value = parentId;
   dialog.maxItems.value = maxItems;
+
+  // Show the actual feed folder name (the bookmark folder created for this feed)
+  try {
+    const [bookmark] = await browser.bookmarks.get(id).catch(() => []);
+    dialog.querySelector('[name="currentFeedFolder"]').value = bookmark && bookmark.title ? bookmark.title : title;
+  } catch (e) {
+    dialog.querySelector('[name="currentFeedFolder"]').value = title;
+  }
+
+  // (親フォルダー表示は省略しています — 表示が紛らわしいため)
+
+  // Wire the change button to open the parent-folder selector dialog
+  const changeBtn = dialog.querySelector('#change-parent-button');
+  changeBtn.onclick = (e) => {
+    e.preventDefault();
+    showChangeParentDialog(feed);
+  };
 
   const deleteButton = dialog.querySelector(".delete");
   deleteButton.onclick = async (e) => {
@@ -347,6 +363,47 @@ async function showEditFeedDialog(feed) {
       await LivemarkStore.edit(id, props);
     }
   };
+  toggleDialog(dialog.id, true);
+}
+
+// Open the folder selector to change the parent of an existing feed folder.
+async function showChangeParentDialog(feed) {
+  const dialog = document.querySelector("#select-folder-dialog");
+
+  toggleDialog(dialog.id, false);
+
+  await populateFolderSelector(dialog.livemarkFolder, true);
+
+  // Store the feed id on the dialog so submit handler knows what to edit.
+  dialog.dataset.changingFeed = feed.id;
+
+  const deleteButton = dialog.querySelector(".delete");
+  deleteButton.onclick = async (e) => {
+    e.preventDefault();
+    toggleDialog(dialog.id, false);
+    await LivemarkStore.remove(feed.id);
+  };
+
+  dialog.onsubmit = async (e) => {
+    e.preventDefault();
+    const valid = dialog.reportValidity();
+    if (valid) {
+      toggleDialog(dialog.id, false);
+      const newParentId = dialog.livemarkFolder.value;
+      await LivemarkStore.edit(feed.id, { parentId: newParentId });
+      // Update the edit dialog display if still open: refresh displayed feed-folder name
+      const editDialog = document.querySelector('#edit-livemark-dialog');
+      if (!editDialog.hidden) {
+        try {
+          const [bookmark] = await browser.bookmarks.get(feed.id).catch(() => []);
+          editDialog.querySelector('[name="currentFeedFolder"]').value = bookmark && bookmark.title ? bookmark.title : feed.title;
+        } catch (e) {
+          editDialog.querySelector('[name="currentFeedFolder"]').value = feed.title;
+        }
+      }
+    }
+  };
+
   toggleDialog(dialog.id, true);
 }
 
@@ -402,7 +459,28 @@ async function populateFolderSelector(folderSelector, removeBuiltin = false) {
     option.textContent = title;
     return option;
   }));
-  folderSelector.value = await Settings.getDefaultFolder();
+  // If caller requested, ensure a particular folder id is present and selected.
+  // The third argument may be provided as `ensureId` via arguments[2].
+  const ensureId = arguments.length >= 3 ? arguments[2] : null;
+  if (ensureId) {
+    // If not already present in the options, try to load it and add it as the first option.
+    if (!Array.from(folderSelector.options).some(o => o.value === ensureId)) {
+      try {
+        const [node] = await browser.bookmarks.get(ensureId);
+        if (node && node.id) {
+          const option = document.createElement('option');
+          option.value = node.id;
+          option.textContent = node.title || node.id;
+          folderSelector.insertBefore(option, folderSelector.firstChild);
+        }
+      } catch (e) {
+        // ignore if bookmark not found
+      }
+    }
+    folderSelector.value = ensureId;
+  } else {
+    folderSelector.value = await Settings.getDefaultFolder();
+  }
 }
 
 function toggleDialog(id, shown) {
