@@ -1,0 +1,203 @@
+{
+  "extensionDescription": {
+    "message": "Restaure les marque-pages dynamiques RSS pour Firefox 64 et plus."
+  },
+  "reloadLiveBookmark": {
+    "message": "Actualiser les entrées"
+  },
+  "openAllUnreadPages": {
+    "message": "Ouvrir toutes les pages non lues"
+  },
+  "openSiteUrl": {
+    "message": "Ouvrir « $site$ »",
+    "placeholders": {
+      "site" : {
+        "content" : "$1"
+      }
+    }
+  },
+  "subscribe": {
+    "message": "S'abonner"
+  },
+  "subscribe_title": {
+    "message": "Aperçu du flux"
+  },
+  "subscribe_addLivemark": {
+    "message": "Ajouter un marque-page"
+  },
+  "subscribe_viewSource": {
+    "message": "Afficher la source"
+  },
+  "subscribe_failedToFetchFeed": {
+    "message": "Impossible de récupérer le flux"
+  },
+  "subscribe_noEntriesFound": {
+    "message": "Aucune entrée trouvée"
+  },
+  "subscribe_subscribed": {
+    "message": "Ajouté à $FOLDER$, visitez la page d'options pour éditer le marque-page",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "noItemsFound": {
+    "message": "Aucun élément trouvé"
+  },
+  "yourLivemarks": {
+    "description": "Title of the 'Your livemarks' page",
+    "message": "Marque-pages"
+  },
+  "moreOptions": {
+    "message": "Plus d'options"
+  },
+  "newLivemark": {
+    "message": "Nouveau marque-page"
+  },
+  "enterFeedURL": {
+    "message": "Entrez l'URL du flux"
+  },
+  "settings_importExport_heading": {
+    "message": "Importer/Exporter"
+  },
+  "settings_importExport_description": {
+    "message": "Cette fonctionnalité utilise le format OPML utilisé par la plupart des lecteurs RSS."
+  },
+  "settings_importExport_importFeeds": {
+    "message": "Importer des flux"
+  },
+  "settings_importExport_exportFeeds": {
+    "message": "Exporter les flux"
+  },
+  "settings_importExport_successImport": {
+    "message": "$COUNT$ flux importés avec succès.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_importExport_errorImport": {
+    "message": "Erreur durant l'importation du fichier OPML"
+  },
+  "settings_refreshInterval_heading": {
+    "message": "Fréquence de mise à jour"
+  },
+  "settings_refreshInterval_description": {
+    "message": "Configurez la fréquence de mise à jour des flux."
+  },
+  "settings_refreshInterval_minutes": {
+    "description": "Shown as 'X minutes' in the settings dialog",
+    "message": "minutes"
+  },
+  "settings_defaultFolder_heading": {
+    "message": "Dossier par défaut"
+  },
+  "settings_defaultFolder_description": {
+    "message": "Vos futurs marque-pages seront enregistrés ici par défaut."
+  },
+  "settings_prefixes_heading": {
+    "message": "Préfixes de marque-page"
+  },
+  "settings_prefixes_description": {
+    "message": "Ces chaînes de caractères vont être utilisées comme préfixes pour indiquer le statut."
+  },
+  "settings_prefixes_unread": {
+    "message": "Non lu :"
+  },
+  "settings_prefixes_read": {
+    "message": "Lu :"
+  },
+  "settings_prefixes_feed_folder": {
+    "message": "Afficher sur les dossiers quand toutes leurs publications sont lues/non-lues"
+  },
+  "settings_prefixes_parent_folders": {
+    "message": "Afficher sur le dossier parent quand tous leurs dossiers enfants sont lues/non-lues"
+  },
+  "settings_feedPreview_heading": {
+    "message": "Aperçu des flux"
+  },
+  "settings_feedPreview_description": {
+    "message": "Activer l'aperçu personnalisé quand je visite un flux"
+  },
+  "settings_extensionIcon_heading": {
+    "message": "Icône de l'extension"
+  },
+  "settings_extensionIcon_description": {
+    "message": "Choisissez l'icône qui fonctionne le mieux avec votre thème."
+  },
+  "settings_extensionIcon_darkIcon": {
+    "message": "Icône sombre"
+  },
+  "settings_extensionIcon_lightIcon": {
+    "message": "Icône claire"
+  },
+  "settings_extensionIcon_orangeIcon": {
+    "message": "Icône orange"
+  },
+  "settings_about_heading": {
+    "message": "À propos"
+  },
+  "settings_about_description_authors": {
+    "message": "Cette extension a été créée par :"
+  },
+  "settings_about_description_before_foxish": {
+    "description": "Between _before_foxish and _after_foxish there is a 'Foxish' HTML link",
+    "message": "Elle est basée sur"
+  },
+  "settings_about_description_after_foxish": {
+    "message": "."
+  },
+  "settings_about_description_support": {
+    "message": "Vous pouvez soutenir l'extension en :"
+  },
+  "settings_about_donating": {
+    "message": "Faisant un don"
+  },
+  "settings_about_reviewing": {
+    "message": "Donnant une bonne critique"
+  },
+  "settings_about_reporting": {
+    "message": "Signalant des problèmes"
+  },
+  "settings_about_translating": {
+    "message": "Contribuant aux traductions"
+  },
+  "settings_close": {
+    "message": "Fermer"
+  },
+  "settings_editFeed": {
+    "message": "Modifier ce flux"
+  },
+  "editLivemark_name": {
+    "message": "Nom"
+  },
+  "editLivemark_remove": {
+    "message": "Supprimer ce flux"
+  },
+  "editLivemark_feedURL": {
+    "message": "URL du flux"
+  },
+  "editLivemark_siteURL": {
+    "message": "URL du site"
+  },
+  "editLivemark_parentFolder": {
+    "message": "Dossier parent"
+  },
+  "editLivemark_maxItems": {
+    "message": "Nombre maximum d'éléments"
+  },
+  "editLivemark_cancel": {
+    "message": "Annuler"
+  },
+  "editLivemark_save": {
+    "message": "Enregistrer"
+  },
+  "settings_brokenLivemark": {
+    "message": "Marque-page erroné"
+  },
+  "selectFolder_folder": {
+    "message": "Sélectionnez un nouveau dossier pour le marque-page erroné"
+  }
+}

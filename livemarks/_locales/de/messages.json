@@ -1,0 +1,203 @@
+{
+  "extensionDescription": {
+    "message": "Stellt die RSS-Live-Lesezeichenunterstützung für Firefox 64 und höher wieder her."
+  },
+  "reloadLiveBookmark": {
+    "message": "Dynamische Lesezeichen aktualisieren"
+  },
+  "openAllUnreadPages": {
+    "message": "Alle ungelesenen Seiten öffnen"
+  },
+  "openSiteUrl": {
+    "message": "\"$site$\" öffnen",
+    "placeholders": {
+      "site" : {
+        "content" : "$1"
+      }
+    }
+  },
+  "subscribe": {
+    "message": "Abonnieren"
+  },
+  "subscribe_title": {
+    "message": "Feed-Vorschau"
+  },
+  "subscribe_addLivemark": {
+    "message": "Livemark hinzufügen"
+  },
+  "subscribe_viewSource": {
+    "message": "Quelltext anzeigen"
+  },
+  "subscribe_failedToFetchFeed": {
+    "message": "Laden des Feeds fehlgeschlagen"
+  },
+  "subscribe_noEntriesFound": {
+    "message": "Keine Feed-Einträge gefunden"
+  },
+  "subscribe_subscribed": {
+    "message": "Livemark wurde dem Ordner $FOLDER$ hinzugefügt. In den Einstellungen können Sie das Lesezeichen bearbeiten.",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "noItemsFound": {
+    "message": "Keine Einträge gefunden"
+  },
+  "yourLivemarks": {
+    "description": "Title of the 'Your livemarks' page",
+    "message": "Ihre Livemarks"
+  },
+  "moreOptions": {
+    "message": "Optionen"
+  },
+  "newLivemark": {
+    "message": "Neues Livemark"
+  },
+  "enterFeedURL": {
+    "message": "Feed-URL eingeben"
+  },
+  "settings_importExport_heading": {
+    "message": "Import/Export"
+  },
+  "settings_importExport_description": {
+    "message": "Dieses Feature benutzt das OPML-Format, das von den meisten RSS-Readern verwendet wird."
+  },
+  "settings_importExport_importFeeds": {
+    "message": "Feeds importieren…"
+  },
+  "settings_importExport_exportFeeds": {
+    "message": "Feeds exportieren…"
+  },
+  "settings_importExport_successImport": {
+    "message": "$COUNT$ Feeds erfolgreich importiert.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_importExport_errorImport": {
+    "message": "Fehler beim Import der OPML-Datei"
+  },
+  "settings_refreshInterval_heading": {
+    "message": "Aktualisierungsintervall"
+  },
+  "settings_refreshInterval_description": {
+    "message": "Einstellen, wie oft die Livemarks aktualisiert werden."
+  },
+  "settings_refreshInterval_minutes": {
+    "description": "Shown as 'X minutes' in the settings dialog",
+    "message": "Minuten"
+  },
+  "settings_defaultFolder_heading": {
+    "message": "Standardordner"
+  },
+  "settings_defaultFolder_description": {
+    "message": "Alle zukünftigen Livemarks werden hier abgespeichert."
+  },
+  "settings_prefixes_heading": {
+    "message": "Lesezeichen-Präfix"
+  },
+  "settings_prefixes_description": {
+    "message": "Die angegebenen Zeichenketten werden als Lesezeichen-Präfix verwendet, um den jeweiligen Status anzuzeigen."
+  },
+  "settings_prefixes_unread": {
+    "message": "Ungelesen:"
+  },
+  "settings_prefixes_read": {
+    "message": "Gelesen:"
+  },
+  "settings_prefixes_feed_folder": {
+    "message": "Bei Ordnern anzeigen, wenn alle ihre Elemente gelesen/ungelesen sind."
+  },
+  "settings_prefixes_parent_folders": {
+    "message": "Bei übergeordneten Ordnern anzeigen, wenn alle Unterordner gelesen/ungelesen sind."
+  },
+  "settings_feedPreview_heading": {
+    "message": "Feed-Vorschau"
+  },
+  "settings_feedPreview_description": {
+    "message": "Feed-Vorschau aktivieren, wenn eine Feed-URL direkt besucht wird."
+  },
+  "settings_extensionIcon_heading": {
+    "message": "Erweiterungssymbol"
+  },
+  "settings_extensionIcon_description": {
+    "message": "Das Symbol wählen, das am besten zum Browser-Theme passt."
+  },
+  "settings_extensionIcon_darkIcon": {
+    "message": "Dunkles Symbol"
+  },
+  "settings_extensionIcon_lightIcon": {
+    "message": "Helles Symbol"
+  },
+  "settings_extensionIcon_orangeIcon": {
+    "message": "Orangefarbenes Symbol"
+  },
+  "settings_about_heading": {
+    "message": "Über"
+  },
+  "settings_about_description_authors": {
+    "message": "Dieses Add-on wurde erstellt durch:"
+  },
+  "settings_about_description_before_foxish": {
+    "description": "Between _before_foxish and _after_foxish there is a 'Foxish' HTML link",
+    "message": "Es basiert auf "
+  },
+  "settings_about_description_after_foxish": {
+    "message": "."
+  },
+  "settings_about_description_support": {
+    "message": "Das Add-on unterstützen durch:"
+  },
+  "settings_about_donating": {
+    "message": "Spenden"
+  },
+  "settings_about_reviewing": {
+    "message": "Eine gute Bewertung erteilen"
+  },
+  "settings_about_reporting": {
+    "message": "Fehler melden"
+  },
+  "settings_about_translating": {
+    "message": "Übersetzungen beisteuern"
+  },
+  "settings_close": {
+    "message": "Schließen"
+  },
+  "settings_editFeed": {
+    "message": "Diesen Feed bearbeiten"
+  },
+  "editLivemark_name": {
+    "message": "Name"
+  },
+  "editLivemark_remove": {
+    "message": "Diesen Feed entfernen"
+  },
+  "editLivemark_feedURL": {
+    "message": "Feed-URL"
+  },
+  "editLivemark_siteURL": {
+    "message": "Site-URL"
+  },
+  "editLivemark_parentFolder": {
+    "message": "Übergeordneter Ordner"
+  },
+  "editLivemark_maxItems": {
+    "message": "Maximale Anzahl Einträge"
+  },
+  "editLivemark_cancel": {
+    "message": "Abbrechen"
+  },
+  "editLivemark_save": {
+    "message": "Speichern"
+  },
+  "settings_brokenLivemark": {
+    "message": "Beschädigtes Livemark"
+  },
+  "selectFolder_folder": {
+    "message": "Ordner für beschädigte Livemarks auswählen."
+  }
+}

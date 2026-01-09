@@ -1,0 +1,197 @@
+{
+  "extensionDescription": {
+    "message": "Obnovi podporo za RSS zaznamke za Firefox 64 in novejše."
+  },
+  "reloadLiveBookmark": {
+    "message": "Osveži Livemark"
+  },
+  "openSiteUrl": {
+    "message": "Odpri \"$site$\"",
+    "placeholders": {
+      "site" : {
+        "content" : "$1"
+      }
+    }
+  },
+  "subscribe": {
+    "message": "Naroči se"
+  },
+  "subscribe_title": {
+    "message": "Predogled vira"
+  },
+  "subscribe_addLivemark": {
+    "message": "Dodaj Livemark"
+  },
+  "subscribe_viewSource": {
+    "message": "Prikaži vir"
+  },
+  "subscribe_failedToFetchFeed": {
+    "message": "Vir ni bilo mogoče pridobiti"
+  },
+  "subscribe_noEntriesFound": {
+    "message": "Ni najdenih vnosov vira"
+  },
+  "subscribe_subscribed": {
+    "message": "Dodan v $FOLDER$, za urejanje obiščite stran z možnostmi.",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "noItemsFound": {
+    "message": "Ni najdenih elementov"
+  },
+  "yourLivemarks": {
+    "description": "Title of the 'Your livemarks' page",
+    "message": "Vaši livemarki"
+  },
+  "moreOptions": {
+    "message": "Več možnosti"
+  },
+  "newLivemark": {
+    "message": "Nov livemark"
+  },
+  "enterFeedURL": {
+    "message": "Vnesite URL vira"
+  },
+  "settings_importExport_heading": {
+    "message": "Uvozi / Izvozi"
+  },
+  "settings_importExport_description": {
+    "message": "Ta funkcija uporablja format OPML, ki ga uporablja večina RSS bralnikov."
+  },
+  "settings_importExport_importFeeds": {
+    "message": "Uvozi vire"
+  },
+  "settings_importExport_exportFeeds": {
+    "message": "Izvozi vire"
+  },
+  "settings_importExport_successImport": {
+    "message": "Uspešno uvoženih $COUNT$ virov.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_importExport_errorImport": {
+    "message": "Napaka pri uvozu OPML datoteke"
+  },
+  "settings_refreshInterval_heading": {
+    "message": "Osvežitveni intervali"
+  },
+  "settings_refreshInterval_description": {
+    "message": "Nastavite, kako pogosto so posodobljene oznake v živo."
+  },
+  "settings_refreshInterval_minutes": {
+    "description": "Shown as 'X minutes' in the settings dialog",
+    "message": "minut"
+  },
+  "settings_defaultFolder_heading": {
+    "message": "Privzeta mapa"
+  },
+  "settings_defaultFolder_description": {
+    "message": "Vsi prihodnji livemarki bodo privzeto shranjeni tukaj"
+  },
+  "settings_prefixes_heading": {
+    "message": "Predpone zaznamkov"
+  },
+  "settings_prefixes_description": {
+    "message": "Nastavljeni nizi bodo uporabljeni kot predpone za zaznamke za označevanje statusa."
+  },
+  "settings_prefixes_unread": {
+    "message": "Neprebrano:"
+  },
+  "settings_prefixes_read": {
+    "message": "Prebrano:"
+  },
+  "settings_prefixes_feed_folder": {
+    "message": "V mapi pokaži če vse otroški elementi prebrani/neprebrani"
+  },
+  "settings_prefixes_parent_folders": {
+    "message": "V nadrejeni mapi pokaži če vse otroške mape prebrane/neprebrane"
+  },
+  "settings_feedPreview_heading": {
+    "message": "Predogled vira"
+  },
+  "settings_feedPreview_description": {
+    "message": "Omogočite predogled, ko neposredno obiščete URL vira"
+  },
+  "settings_extensionIcon_heading": {
+    "message": "Ikona razširitve"
+  },
+  "settings_extensionIcon_description": {
+    "message": "Izberite ikono, ki se najbolj sklada z vašo temo brskalnika."
+  },
+  "settings_extensionIcon_darkIcon": {
+    "message": "Temna ikona"
+  },
+  "settings_extensionIcon_lightIcon": {
+    "message": "Svetla ikona"
+  },
+  "settings_extensionIcon_orangeIcon": {
+    "message": "Oranžna ikona"
+  },
+  "settings_about_heading": {
+    "message": "O dodatku"
+  },
+  "settings_about_description_authors": {
+    "message": "Ta dodatek je naredil:"
+  },
+  "settings_about_description_before_foxish": {
+    "description": "Between _before_foxish and _after_foxish there is a 'Foxish' HTML link",
+    "message": "Temelji na "
+  },
+  "settings_about_description_after_foxish": {
+    "message": "."
+  },
+  "settings_about_description_support": {
+    "message": "Dodatek lahko podpirate tako da:"
+  },
+  "settings_about_donating": {
+    "message": "Donirate"
+  },
+  "settings_about_reviewing": {
+    "message": "Objavite dobro mnenje"
+  },
+  "settings_about_reporting": {
+    "message": "Prijavite težave"
+  },
+  "settings_about_translating": {
+    "message": "Prispevate prevode"
+  },
+  "settings_close": {
+    "message": "Zapri"
+  },
+  "editLivemark_name": {
+    "message": "Ime"
+  },
+  "editLivemark_remove": {
+    "message": "Odstranite ta vir"
+  },
+  "editLivemark_feedURL": {
+    "message": "URL vira"
+  },
+  "editLivemark_siteURL": {
+    "message": "URL strani"
+  },
+  "editLivemark_parentFolder": {
+    "message": "Nadrejena mapa"
+  },
+  "editLivemark_maxItems": {
+    "message": "Največ elementov"
+  },
+  "editLivemark_cancel": {
+    "message": "Prekliči"
+  },
+  "editLivemark_save": {
+    "message": "Shrani"
+  },
+  "settings_brokenLivemark": {
+    "message": "Uničen livemark"
+  },
+  "selectFolder_folder": {
+    "message": "Izberite mapo, ki jo uporablja uničen livemark"
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "extensionDescription": {
+    "message": "Genskaber understøttelse af RSS live-bogmærker i Firefox 64 og nyere"
+  },
+  "reloadLiveBookmark": {
+    "message": "Genindlæs live-bogmærke"
+  },
+  "openSiteUrl": {
+    "message": "Open \"$site$\"",
+    "placeholders": {
+      "site" : {
+        "content" : "$1"
+      }
+    }
+  },
+  "subscribe": {
+    "message": "Abonnér"
+  },
+  "subscribe_title": {
+    "message": "Forhåndsvisning af feed"
+  },
+  "subscribe_addLivemark": {
+    "message": "Tilføj live-bogmærke"
+  },
+  "subscribe_viewSource": {
+    "message": "Vis kilde"
+  },
+  "subscribe_failedToFetchFeed": {
+    "message": "Feedet kan ikke indlæses"
+  },
+  "subscribe_noEntriesFound": {
+    "message": "Feedet findes men er tomt"
+  },
+  "subscribe_subscribed": {
+    "message": "Tilføjet til $FOLDER$, hvis placeringen skal ændres kan det gøres i indstillinger",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "noItemsFound": {
+    "message": "Intet fundet"
+  },
+  "yourLivemarks": {
+    "description": "Title of the 'Your livemarks' page",
+    "message": "Dine live-bogmærker"
+  },
+  "moreOptions": {
+    "message": "Flere indstillinger"
+  },
+  "newLivemark": {
+    "message": "Nyt live-bogmærke"
+  },
+  "enterFeedURL": {
+    "message": "Indtast Feedets URL"
+  },
+  "settings_importExport_heading": {
+    "message": "Importer/Exporter"
+  },
+  "settings_importExport_description": {
+    "message": "Her kan man indlæse OPML filer som er et format som bruges af de fleste RSS læsere."
+  },
+  "settings_importExport_importFeeds": {
+    "message": "Importer feeds"
+  },
+  "settings_importExport_exportFeeds": {
+    "message": "Exporter feeds"
+  },
+  "settings_importExport_successImport": {
+    "message": "Importeret $COUNT$feeds succesfuldt.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_importExport_errorImport": {
+    "message": "Der er sket en fejl under indlæsning af OPML-filen"
+  },
+  "settings_refreshInterval_heading": {
+    "message": "Opdaterings interval"
+  },
+  "settings_refreshInterval_description": {
+    "message": "Angiver hvor ofte live-bogmærker bliver opdateret"
+  },
+  "settings_refreshInterval_minutes": {
+    "description": "Shown as 'X minutes' in the settings dialog",
+    "message": "minutter"
+  },
+  "settings_defaultFolder_heading": {
+    "message": "Standard mappe"
+  },
+  "settings_defaultFolder_description": {
+    "message": "Alle fremtidige live-bogmærker vil blive gemt her"
+  },
+  "settings_prefixes_heading": {
+    "message": "Live-bogmærke prefixer"
+  },
+  "settings_prefixes_description": {
+    "message": "De angivne tegn vil blive brugt som prefix til at vise status."
+  },
+  "settings_prefixes_unread": {
+    "message": "Ikke læste:"
+  },
+  "settings_prefixes_read": {
+    "message": "Læste:"
+  },
+  "settings_feedPreview_heading": {
+    "message": "Forhåndsvisning af feed"
+  },
+  "settings_feedPreview_description": {
+    "message": "Muliggører fårhåndsvisning af feed ved besøg af feedets URL"
+  },
+  "settings_about_heading": {
+    "message": "Om"
+  },
+  "settings_about_description_authors": {
+    "message": "Denne udvidelse er lavet af:"
+  },
+  "settings_about_description_before_foxish": {
+    "description": "Between _before_foxish and _after_foxish there is a 'Foxish' HTML link",
+    "message": "Det er baseret på"
+  },
+  "settings_about_description_after_foxish": {
+    "message": "."
+  },
+  "settings_about_description_support": {
+    "message": "Du kan støtte udvidelsen ved at:"
+  },
+  "settings_about_donating": {
+    "message": "Donere"
+  },
+  "settings_about_reviewing": {
+    "message": "Give en god anmeldelse"
+  },
+  "settings_about_reporting": {
+    "message": "Rapportere problemer"
+  },
+  "settings_about_translating": {
+    "message": "Bidrag med oversættelse"
+  },
+  "settings_close": {
+    "message": "Luk"
+  },
+  "editLivemark_name": {
+    "message": "Navn"
+  },
+  "editLivemark_remove": {
+    "message": "Fjern denne feed"
+  },
+  "editLivemark_feedURL": {
+    "message": "Feedens URL"
+  },
+  "editLivemark_siteURL": {
+    "message": "Hjemmesidens URL"
+  },
+  "editLivemark_parentFolder": {
+    "message": "Overordnet mappe"
+  },
+  "editLivemark_maxItems": {
+    "message": "Maksimalt antal elementer"
+  },
+  "editLivemark_cancel": {
+    "message": "Afbryd"
+  },
+  "editLivemark_save": {
+    "message": "Gem"
+  },
+  "settings_brokenLivemark": {
+    "message": "Fejl ved live-bogmærke"
+  },
+  "selectFolder_folder": {
+    "message": "Vælg mappe til fejlbehæftede live-bogmærker"
+  }
+}

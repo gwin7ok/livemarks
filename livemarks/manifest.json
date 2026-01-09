@@ -1,0 +1,48 @@
+{
+  "manifest_version": 2,
+  "background": {
+    "scripts": [
+      "shared/prefix-utils.js",
+      "shared/feed-parser.js",
+      "shared/settings.js",
+      "shared/livemark-store.js",
+      "background/background.js"
+    ]
+  },
+
+  "content_scripts": [
+    {
+      "js": ["contentscripts/detector.js"],
+      "matches": ["http://*/*", "https://*/*"],
+      "run_at": "document_start"
+    },
+    {
+      "js": ["contentscripts/feed_finder.js"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
+  "icons": {
+    "128": "icons/feed.svg",
+    "16": "icons/feed.svg",
+    "48": "icons/feed.svg"
+  },
+  "name": "Livemarks",
+  "options_ui": {
+    "page": "pages/settings/settings.html",
+    "open_in_tab": true
+  },
+  "page_action": {
+    "default_icon": "icons/feed.svg",
+    "default_title": "__MSG_subscribe__",
+    "default_popup": "popup/popup.html"
+  },
+  "permissions": ["storage", "bookmarks", "history", "webRequest", "webRequestBlocking", "<all_urls>", "tabs", "menus"],
+  "version": "3.8",
+  "applications": {
+    "gecko": {
+      "id": "{c5867acc-54c9-4074-9574-04d8818d53e8}"
+    }
+  }
+}
