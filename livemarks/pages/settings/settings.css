@@ -46,6 +46,18 @@ main>* {
   line-height: 1;
 }
 
+.feed-folder-missing {
+  color: #f39c12;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.feed-folder-empty {
+  color: #3498db;
+  font-weight: bold;
+  line-height: 1;
+}
+
 .feed-delete {
   grid-area: delete;
 }

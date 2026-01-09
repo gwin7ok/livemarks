@@ -148,10 +148,47 @@ const LivemarkStore = {
   },
 
   async _makeDetails(id, { feedUrl, siteUrl, maxItems, updated, lastError }, { readPrefix, unreadPrefix }) {
-    let [{ title, parentId }] = await browser.bookmarks.get(id);
+    let title = "";
+    let parentId = null;
+    let folderMissing = false;
 
-    title = PrefixUtils.removePrefix(readPrefix, title);
-    title = PrefixUtils.removePrefix(unreadPrefix, title);
+    try {
+      const arr = await browser.bookmarks.get(id);
+      const bookmark = arr && arr[0];
+      if (!bookmark) {
+        folderMissing = true;
+      } else {
+        title = bookmark.title || "";
+        parentId = bookmark.parentId || null;
+      }
+    } catch (e) {
+      // If bookmark.get throws (id not found), treat as folder missing.
+      folderMissing = true;
+    }
+
+    let folderEmpty = false;
+    if (title) {
+      title = PrefixUtils.removePrefix(readPrefix, title);
+      title = PrefixUtils.removePrefix(unreadPrefix, title);
+
+      // Check whether the folder currently contains any bookmark children.
+      try {
+        const children = await browser.bookmarks.getChildren(id);
+        // Count bookmark-type children (ignore separators and folders).
+        const bookmarkChildren = (children || []).filter(c => c.type === 'bookmark');
+        // If there are no bookmark children, mark as empty — this lets the UI
+        // show a distinct marker when the folder exists but its items were
+        // removed and not re-created by the updater.
+        folderEmpty = bookmarkChildren.length === 0;
+      } catch (e) {
+        // If getChildren fails, we leave folderEmpty false and preserve
+        // folderMissing which may be true.
+      }
+    } else if (!title && folderMissing) {
+      // Fallback title when folder is missing — use feedUrl so the user can
+      // still identify the entry in the UI.
+      title = feedUrl || "(untitled)";
+    }
 
     return {
       title,
@@ -161,6 +198,8 @@ const LivemarkStore = {
       parentId,
       updated,
       lastError,
+      folderMissing,
+      folderEmpty,
       id,
     };
   },

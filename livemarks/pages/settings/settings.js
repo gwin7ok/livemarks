@@ -256,6 +256,24 @@ function addFeedToList(feed, broken = false) {
     err.title = String(feed.lastError);
     titleWrap.appendChild(err);
   }
+  // Folder missing marker (distinct from parsing/fetch errors)
+  if (feed.folderMissing) {
+    item.classList.add("folder-missing");
+    const fm = document.createElement("span");
+    fm.className = "feed-folder-missing";
+    fm.textContent = "📁✖";
+    fm.title = "フォルダが見つかりません";
+    titleWrap.appendChild(fm);
+  }
+  // Folder empty marker: folder exists but contains no bookmark children
+  if (feed.folderEmpty && !feed.folderMissing) {
+    item.classList.add("folder-empty");
+    const fe = document.createElement("span");
+    fe.className = "feed-folder-empty";
+    fe.textContent = "📭";
+    fe.title = "フォルダにブックマークがありません";
+    titleWrap.appendChild(fe);
+  }
 
   const feedTitle = document.createElement("span");
   feedTitle.textContent = feed.title;
