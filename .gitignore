@@ -5,3 +5,4 @@ package-lock.json
 console-export-*.txt
 xpi_contents/
 xpi_inspect/
+*.log
