@@ -4,6 +4,29 @@ main {
   height: 100%;
 }
 
+/* Increase max-width for settings page and make toolbar wrap nicely on small widths. */
+@media (min-width: 900px) {
+  main {
+    max-width: 1100px;
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar .grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toolbar .float-right {
+  float: none;
+}
+
 main>* {
   padding: 1rem;
 }
