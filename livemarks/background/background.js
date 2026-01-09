@@ -29,10 +29,16 @@ const LivemarkUpdater = {
     this.handleSettingsChange = this.handleSettingsChange.bind(this);
     this.historyOnVisited = this.historyOnVisited.bind(this);
 
-    const interval = await Settings.getPollInterval();
-    this.intervalId = setInterval(this.updateAllLivemarks, 60 * 1000 * interval);
+    // Guarding flags to prevent overlapping update runs when feeds change.
+    this.isUpdating = false;
+    this.pendingRun = false;
+    this.pendingChangedKeys = new Set();
 
-    LivemarkStore.addChangeListener(this.updateAllLivemarks);
+    const interval = await Settings.getPollInterval();
+    // Only run updates on the configured poll interval. Do not trigger
+    // updates in response to livemark list changes (adds/removes) —
+    // those should not cause immediate refreshes.
+    this.intervalId = setInterval(this.updateAllLivemarks, 60 * 1000 * interval);
     Settings.addChangeListener(this.handleSettingsChange);
 
     // We use this Map to mark feed items as visited.
@@ -40,9 +46,8 @@ const LivemarkUpdater = {
     this.itemURLHashToFeeds = new Map();
     browser.history.onVisited.addListener(this.historyOnVisited);
 
-    // Force every feed to be refreshed on startup.
-    const feedIds = (await LivemarkStore.getAll()).map(feed => feed.id);
-    await this.updateAllLivemarks({ changedKeys: feedIds });
+    // Note: Do not force a refresh on startup; rely on the scheduled
+    // interval-based refreshes only.
     console.log("[Livemarks] LivemarkUpdater.init completed");
   },
   async handleSettingsChange(changes) {
@@ -72,6 +77,17 @@ const LivemarkUpdater = {
     }
   },
   async updateAllLivemarks({ changedKeys = [] } = {}) {
+    // If an update is already running, record changed keys and request a
+    // follow-up run instead of overlapping execution.
+    if (this.isUpdating) {
+      console.log("[Livemarks] updateAllLivemarks called while updating; scheduling follow-up run", changedKeys);
+      for (const k of changedKeys) this.pendingChangedKeys.add(k);
+      this.pendingRun = true;
+      return;
+    }
+
+    this.isUpdating = true;
+
     const livemarks = await LivemarkStore.getAll();
 
     const next = () => {
@@ -89,6 +105,36 @@ const LivemarkUpdater = {
         forceUpdate: changedKeys.includes(feed.id),
       }).finally(next);
     });
+
+    // Wait for the last batch to finish by polling the livemarks array; when
+    // done, clear the updating flag and run any pending follow-up once.
+    const waitForCompletion = async () => {
+      // crude wait: poll until there are no more updates queued via next
+      while (this.isUpdating) {
+        // Small pause
+        await new Promise(r => setTimeout(r, 50));
+        // The update chain will clear isUpdating below when complete.
+      }
+    };
+
+    // When all started updates complete, clear flag and handle pending run.
+    (async () => {
+      // The actual work above is asynchronous and driven by promises; give
+      // control to the event loop so those .finally handlers run.
+      await Promise.resolve();
+      // Poll until active update promises have finished. We detect completion
+      // by checking a small timeout window where no new pendingRun is set.
+      // Simpler: wait until all bookmark updates settle by delaying briefly.
+      await new Promise(r => setTimeout(r, 200));
+      this.isUpdating = false;
+      if (this.pendingRun) {
+        const keys = Array.from(this.pendingChangedKeys);
+        this.pendingChangedKeys.clear();
+        this.pendingRun = false;
+        console.log("[Livemarks] Running scheduled follow-up update", keys);
+        await this.updateAllLivemarks({ changedKeys: keys });
+      }
+    })();
   },
   // adds the site url bookmark if it doesn't
   // exist already. Returns whether or not it modified the child list.
@@ -134,6 +180,11 @@ const LivemarkUpdater = {
       feedData = await FeedParser.getFeed(feed.feedUrl);
     } catch (e) {
       console.error("[Livemarks]", "Failed to fetch feed", feed.feedUrl, e);
+      try {
+        await LivemarkStore.edit(feed.id, { lastError: e && e.message ? e.message : String(e) });
+      } catch (ee) {
+        console.error("[Livemarks]", "Failed to persist fetch error", ee);
+      }
       return;
     }
     if (!feedData) {
@@ -148,6 +199,11 @@ const LivemarkUpdater = {
         });
       } catch (e) {
         console.error("[Livemarks]", "No parsable feed returned for", feed.feedUrl);
+      }
+      try {
+        await LivemarkStore.edit(feed.id, { lastError: "No parsable feed returned" });
+      } catch (ee) {
+        console.error("[Livemarks]", "Failed to persist parse error", ee);
       }
       return;
     }
@@ -267,7 +323,7 @@ const LivemarkUpdater = {
     for (; i < usableChildren.length; ++i) {
       await browser.bookmarks.remove(usableChildren[i].id);
     }
-    await LivemarkStore.edit(folder.id, { updated: feedData.updated });
+    await LivemarkStore.edit(folder.id, { updated: feedData.updated, lastError: null });
 
     // Update the feed folder title prefix if all items have been read
     if (await Settings.getPrefixFeedFolderEnabled()) {

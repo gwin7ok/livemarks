@@ -139,10 +139,15 @@ const LivemarkStore = {
       oldFeed.updated = feed.updated;
     }
 
+    // Preserve arbitrary error state when provided by callers.
+    if (feed.lastError !== undefined) {
+      oldFeed.lastError = feed.lastError;
+    }
+
     await browser.storage.sync.set({ [toInternalId(id)]: oldFeed });
   },
 
-  async _makeDetails(id, { feedUrl, siteUrl, maxItems, updated }, { readPrefix, unreadPrefix }) {
+  async _makeDetails(id, { feedUrl, siteUrl, maxItems, updated, lastError }, { readPrefix, unreadPrefix }) {
     let [{ title, parentId }] = await browser.bookmarks.get(id);
 
     title = PrefixUtils.removePrefix(readPrefix, title);
@@ -155,6 +160,7 @@ const LivemarkStore = {
       maxItems,
       parentId,
       updated,
+      lastError,
       id,
     };
   },

@@ -198,11 +198,24 @@ function addFeedToList(feed, broken = false) {
   if (broken) {
     item.classList.add("broken");
   }
+  // Title area (with optional error marker)
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "feed-title-wrap";
+
+  if (feed.lastError) {
+    item.classList.add("error");
+    const err = document.createElement("span");
+    err.className = "feed-error";
+    err.textContent = "⚠";
+    err.title = String(feed.lastError);
+    titleWrap.appendChild(err);
+  }
 
   const feedTitle = document.createElement("span");
   feedTitle.textContent = feed.title;
   feedTitle.className = "feed-title";
-  item.appendChild(feedTitle);
+  titleWrap.appendChild(feedTitle);
+  item.appendChild(titleWrap);
 
   const feedUrl = document.createElement("span");
   feedUrl.textContent = feed.feedUrl;
@@ -210,7 +223,7 @@ function addFeedToList(feed, broken = false) {
   item.appendChild(feedUrl);
 
   const editIcon = document.createElement("button");
-  editIcon.title = I18N.getMessage("settings_editFeed");
+  editIcon.title = I18N && I18N.getMessage ? I18N.getMessage("settings_editFeed") : "編集";
   editIcon.className = "icon more feed-edit";
   editIcon.onclick = () => {
     if (!broken) {
@@ -220,6 +233,18 @@ function addFeedToList(feed, broken = false) {
     }
   };
   item.appendChild(editIcon);
+
+  const delBtn = document.createElement("button");
+  delBtn.title = "削除";
+  delBtn.className = "icon delete feed-delete";
+  delBtn.onclick = async (e) => {
+    e.preventDefault();
+    if (confirm("このフィードを削除してもよいですか？")) {
+      await LivemarkStore.remove(feed.id);
+    }
+  };
+  item.appendChild(delBtn);
+
   document.getElementById("feeds").appendChild(item);
 }
 
