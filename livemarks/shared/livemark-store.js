@@ -116,6 +116,11 @@ const LivemarkStore = {
       });
     }
 
+    // Persist stored title so UI shows the updated name immediately
+    if (feed.title !== undefined && feed.title !== null) {
+      oldFeed.title = feed.title;
+    }
+
     // Folder change
     if (feed.parentId && feed.parentId !== oldBookmark.parentId) {
       await browser.bookmarks.move(id, {
@@ -146,6 +151,32 @@ const LivemarkStore = {
     // Preserve arbitrary error state when provided by callers.
     if (feed.lastError !== undefined) {
       oldFeed.lastError = feed.lastError;
+    }
+
+    // If the feed's title or siteUrl changed, ensure the "open site" child
+    // bookmark (first bookmark child) is updated to reflect the new folder
+    // title / site URL. This keeps the visible first-child name in sync when
+    // the user renames the feed in the settings UI.
+    try {
+      const siteUrl = (feed.siteUrl !== undefined) ? feed.siteUrl : oldFeed.siteUrl;
+      const newFolderTitle = (feed.title !== undefined && feed.title !== null) ? feed.title : (oldBookmark.title || '');
+      if (siteUrl) {
+        const children = await browser.bookmarks.getChildren(id).catch(() => []);
+        if (children && children.length > 0) {
+          const first = children[0];
+          if (first && first.type === 'bookmark') {
+            const expectedTitle = (browser && browser.i18n && typeof browser.i18n.getMessage === 'function') ?
+              browser.i18n.getMessage('openSiteUrl', newFolderTitle) : newFolderTitle;
+            try {
+              await browser.bookmarks.update(first.id, { title: expectedTitle, url: siteUrl });
+            } catch (e) {
+              // ignore update failures
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Livemarks] failed to update site-url child after edit', e);
     }
 
     await browser.storage.sync.set({ [toInternalId(id)]: oldFeed });
