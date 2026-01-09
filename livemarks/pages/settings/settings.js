@@ -326,12 +326,45 @@ async function showEditFeedDialog(feed) {
   dialog.siteUrl.value = siteUrl;
   dialog.maxItems.value = maxItems;
 
-  // Show the actual feed folder name (the bookmark folder created for this feed)
+  // Show the actual feed folder path (root / ... / folder)
+  const getFolderPath = async (folderId) => {
+    const parts = [];
+    let nodeId = folderId;
+    while (nodeId) {
+      try {
+        const arr = await browser.bookmarks.get(nodeId).catch(() => []);
+        const node = arr && arr[0];
+        if (!node) break;
+        // push raw title (may be empty); we'll filter empties later
+        parts.push(node.title || '');
+        nodeId = node.parentId;
+      } catch (e) {
+        break;
+      }
+    }
+    parts.reverse();
+    // Remove empty parts (e.g. unnamed root nodes) and present as '/a / b / c'
+    const filtered = parts.filter(p => p && p.trim().length > 0);
+    if (filtered.length === 0) return '/';
+    return '/' + filtered.join(' / ');
+  };
+
   try {
-    const [bookmark] = await browser.bookmarks.get(id).catch(() => []);
-    dialog.querySelector('[name="currentFeedFolder"]').value = bookmark && bookmark.title ? bookmark.title : title;
+    const path = await getFolderPath(id);
+    const ta = dialog.querySelector('[name="currentFeedFolder"]');
+    ta.value = path;
+    // auto-resize to fit content
+    ta.style.height = 'auto';
+    const minPx = 36; // ~2.2rem
+    const h = Math.max(ta.scrollHeight, minPx);
+    ta.style.height = (h) + 'px';
   } catch (e) {
-    dialog.querySelector('[name="currentFeedFolder"]').value = title;
+    const ta = dialog.querySelector('[name="currentFeedFolder"]');
+    ta.value = title;
+    ta.style.height = 'auto';
+    const minPx = 36;
+    const h = Math.max(ta.scrollHeight, minPx);
+    ta.style.height = (h) + 'px';
   }
 
   // (親フォルダー表示は省略しています — 表示が紛らわしいため)
@@ -341,14 +374,7 @@ async function showEditFeedDialog(feed) {
   const changeBtn = dialog.querySelector('#change-parent-button');
   if (changeBtn) changeBtn.style.display = 'none';
 
-  // Wire the rebind button to open the rebind dialog
-  const viewBtn = dialog.querySelector('#view-folder-button');
-  if (viewBtn) {
-    viewBtn.onclick = (e) => {
-      e.preventDefault();
-      showSelectFolderDialog(feed);
-    };
-  }
+  // Folder is displayed inline; no view/rebind controls.
 
   const deleteButton = dialog.querySelector(".delete");
   deleteButton.onclick = async (e) => {
@@ -380,8 +406,35 @@ async function showSelectFolderDialog(feed) {
 
   toggleDialog(dialog.id, false);
 
-  // Render the full tree in view-only mode (no selection / no submit).
-  await populateFolderSelector(dialog.querySelector('#livemarkFolderTree'), true, feed.parentId, true);
+  // Display the folder path (slash-separated) for the feed's folder id.
+  const treeContainer = dialog.querySelector('#livemarkFolderTree');
+  treeContainer.textContent = '';
+  try {
+    // Start from the feed's folder id (feed.id) and walk up parents collecting titles
+    let nodeId = feed.id;
+    const parts = [];
+    while (nodeId) {
+      try {
+        const arr = await browser.bookmarks.get(nodeId).catch(() => []);
+        const node = arr && arr[0];
+        if (!node) break;
+        parts.push(node.title || '(無題)');
+        nodeId = node.parentId;
+      } catch (e) {
+        break;
+      }
+    }
+    // Reverse to get root -> ... -> folder
+    parts.reverse();
+    const path = parts.join(' / ');
+    treeContainer.textContent = path || '(不明なフォルダ)';
+    const hidden = dialog.querySelector('input[name="livemarkFolder"]');
+    if (hidden) hidden.value = feed.id;
+  } catch (e) {
+    console.error('[Livemarks] failed to build folder path', e);
+    treeContainer.textContent = '(フォルダの情報を取得できません)';
+  }
+
   toggleDialog(dialog.id, true);
 }
 
