@@ -99,8 +99,10 @@ window.onload = async () => {
       const oldText = updateNowBtn.textContent;
       updateNowBtn.textContent = "更新中...";
       try {
-        await browser.runtime.sendMessage({ msg: "triggerUpdate" });
-        // Optionally inform the user that the update was requested.
+        // Collect all live feed IDs and request a forced update for them.
+        const allFeeds = await LivemarkStore.getAll();
+        const ids = allFeeds.map(f => f.id);
+        await browser.runtime.sendMessage({ msg: "triggerUpdate", changedKeys: ids });
         alert(I18N.getMessage ? I18N.getMessage("settings_updateStarted") : "フィード更新を開始しました。");
       } catch (err) {
         console.error("[Livemarks] manual update request failed", err);

@@ -75,6 +75,56 @@ const LivemarkUpdater = {
         this.itemURLHashToFeeds.delete(hash);
       }
     }
+    try {
+      const hash = hashString(item.url);
+
+      const entry = this.itemURLHashToFeeds.get(hash);
+
+      // If we have an entry recorded from the last update run, use it.
+      if (entry !== undefined) {
+        for (const bookmarkId of entry) {
+          if (await LivemarkStore.isLivemarkFolder(bookmarkId)) {
+            const feed = await LivemarkStore.getDetails(bookmarkId);
+            await this.updateLivemark(feed, { forceUpdate: true });
+          }
+          entry.delete(bookmarkId);
+          if (entry.size === 0) {
+            this.itemURLHashToFeeds.delete(hash);
+          }
+        }
+        return;
+      }
+
+      // Fallback: if we didn't have the URL recorded, search bookmarks
+      // directly for this URL and walk up to see if it's inside any
+      // livemark folder. This handles the case where the user visited an
+      // item before the updater recorded it.
+      const matches = await browser.bookmarks.search({ url: item.url }).catch(() => []);
+      if (!matches || matches.length === 0) return;
+
+      const updated = new Set();
+      for (const bm of matches) {
+        let p = bm.parentId;
+        while (p) {
+          const arr = await browser.bookmarks.get(p).catch(() => []);
+          const node = arr && arr[0];
+          if (!node) break;
+
+          if (await LivemarkStore.isLivemarkFolder(node.id)) {
+            if (!updated.has(node.id)) {
+              updated.add(node.id);
+              const feed = await LivemarkStore.getDetails(node.id);
+              await this.updateLivemark(feed, { forceUpdate: true });
+            }
+            break;
+          }
+
+          p = node.parentId;
+        }
+      }
+    } catch (e) {
+      console.error('[Livemarks] historyOnVisited handler failed', e);
+    }
   },
   async updateAllLivemarks({ changedKeys = [] } = {}) {
     // If an update is already running, record changed keys and request a
@@ -527,9 +577,10 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
 
   if (request.msg == "triggerUpdate") {
     try {
-      // Trigger an immediate update run. The updater serializes concurrent
-      // runs internally.
-      await LivemarkUpdater.updateAllLivemarks();
+      // If caller supplied changedKeys, pass them through so updateAllLivemarks
+      // can force-update the specified feeds. Otherwise run a normal update.
+      const changedKeys = Array.isArray(request.changedKeys) ? request.changedKeys : [];
+      await LivemarkUpdater.updateAllLivemarks({ changedKeys });
       return { ok: true };
     } catch (e) {
       console.error("[Livemarks] triggerUpdate failed", e);
