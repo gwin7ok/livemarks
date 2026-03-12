@@ -36,13 +36,35 @@ const FeedParser = {
           return;
         }
 
+        // If we have a non-XML response, try to produce a more helpful
+        // error for the caller. A non-200 status commonly indicates the
+        // site is unavailable or returned an error page (HTML), which is
+        // useful to present to the user as the broken reason.
         if (request.status === 200) {
-          // No XML data but a 200 response — treat as no-parsable-XML.
           console.warn("[Livemarks] FeedParser.fetchXML no XML data (200) for", url);
           resolve(null);
-        } else {
+          return;
+        }
+
+        // Non-200 responses: attempt to classify the body.
+        try {
+          const body = request.responseText || '';
+          const lower = body.toLowerCase();
+          let reason = `${request.status}: ${request.statusText}`;
+
+          // If the response looks like an HTML error page, signal that the
+          // site returned an error page (likely site unavailable or removed).
+          if (lower.includes('<!doctype html') || lower.includes('<html') || lower.includes('<head')) {
+            reason += ' - server returned an HTML error page';
+          }
+
           console.error("[Livemarks] FeedParser.fetchXML network error", request.status, request.statusText, url);
+          reject(new Error(`${reason} (${url})`));
+          return;
+        } catch (e) {
+          console.error("[Livemarks] FeedParser.fetchXML error inspecting body", e);
           reject(new Error(`${request.status}: ${request.statusText} (${url})`));
+          return;
         }
       });
       request.addEventListener("error", (event) => {

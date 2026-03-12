@@ -225,18 +225,11 @@ async function loadFeeds() {
   const normalFeeds = allFeeds.filter(f => !(f && f.lastError));
 
   if (window.showErrorsFirst) {
-    errorFeeds.forEach(feed => {
-      // Use a localized title for errored items if available.
-      feed.title = I18N && I18N.getMessage ? I18N.getMessage("settings_brokenLivemark") : feed.title;
-      addFeedToList(feed, true);
-    });
+    errorFeeds.forEach(feed => addFeedToList(feed, true));
     normalFeeds.forEach(feed => addFeedToList(feed, false));
   } else {
     normalFeeds.forEach(feed => addFeedToList(feed, false));
-    errorFeeds.forEach(feed => {
-      feed.title = I18N && I18N.getMessage ? I18N.getMessage("settings_brokenLivemark") : feed.title;
-      addFeedToList(feed, true);
-    });
+    errorFeeds.forEach(feed => addFeedToList(feed, true));
   }
 
   console.log("[Livemarks] settings.loadFeeds completed: feedsCount=", allFeeds.length);
@@ -294,11 +287,9 @@ function addFeedToList(feed, broken = false) {
   editIcon.title = I18N && I18N.getMessage ? I18N.getMessage("settings_editFeed") : "編集";
   editIcon.className = "icon more feed-edit";
   editIcon.onclick = () => {
-    if (!broken) {
-      showEditFeedDialog(feed);
-    } else {
-      showSelectFolderDialog(feed);
-    }
+    // Always open the edit dialog — allow editing and recovery even for
+    // feeds currently marked as broken.
+    showEditFeedDialog(feed);
   };
   item.appendChild(editIcon);
 
@@ -327,6 +318,73 @@ async function showEditFeedDialog(feed) {
   dialog.feedUrl.value = feedUrl;
   dialog.siteUrl.value = siteUrl;
   dialog.maxItems.value = maxItems;
+
+  // If this feed has an error recorded, show an error box with actions
+  // (retry this feed only, or clear the error). This lets users recover
+  // without changing other feeds.
+  try {
+    const prev = dialog.querySelector('.edit-error-box');
+    if (prev) prev.remove();
+    if (feed.lastError) {
+      const errBox = document.createElement('div');
+      errBox.className = 'edit-error-box';
+      errBox.style.background = 'var(--dialog-error-bg, #4a2f2f)';
+      errBox.style.color = 'var(--text-color, #fff)';
+      errBox.style.padding = '10px';
+      errBox.style.marginBottom = '8px';
+      errBox.style.borderRadius = '4px';
+
+      const msg = document.createElement('div');
+      msg.textContent = String(feed.lastError);
+      msg.style.whiteSpace = 'pre-wrap';
+      msg.style.marginBottom = '8px';
+      errBox.appendChild(msg);
+
+      const btnWrap = document.createElement('div');
+      btnWrap.style.display = 'flex';
+      btnWrap.style.gap = '8px';
+
+      const retryBtn = document.createElement('button');
+      retryBtn.textContent = '再試行';
+      retryBtn.className = 'button';
+      retryBtn.onclick = async (e) => {
+        e.preventDefault();
+        retryBtn.disabled = true;
+        try {
+          await browser.runtime.sendMessage({ msg: 'triggerUpdate', changedKeys: [id] });
+        } catch (e) {
+          console.error('[Livemarks] retry failed', e);
+        } finally {
+          retryBtn.disabled = false;
+        }
+      };
+
+      const clearBtn = document.createElement('button');
+      clearBtn.textContent = 'エラーをクリア';
+      clearBtn.className = 'button';
+      clearBtn.onclick = async (e) => {
+        e.preventDefault();
+        try {
+          await LivemarkStore.edit(id, { lastError: null });
+          loadFeeds();
+          toggleDialog(dialog.id, false);
+        } catch (err) {
+          console.error('[Livemarks] clear lastError failed', err);
+        }
+      };
+
+      btnWrap.appendChild(retryBtn);
+      btnWrap.appendChild(clearBtn);
+      errBox.appendChild(btnWrap);
+
+      // Insert error box near top of dialog
+      const first = dialog.firstChild;
+      if (first) dialog.insertBefore(errBox, first.nextSibling);
+      else dialog.appendChild(errBox);
+    }
+  } catch (e) {
+    console.warn('[Livemarks] failed to render edit error box', e);
+  }
 
   // Show the actual feed folder path (root / ... / folder)
   const getFolderPath = async (folderId) => {
