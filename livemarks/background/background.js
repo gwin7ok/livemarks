@@ -645,3 +645,23 @@ chrome.webRequest.onHeadersReceived.addListener(details => {
     };
   }
 }, { urls: ["<all_urls>"], types: ["main_frame"] }, ["blocking", "responseHeaders"]);
+
+// Open options page when the toolbar icon is clicked (browser action).
+try {
+  if (browser && browser.browserAction && browser.browserAction.onClicked) {
+    browser.browserAction.onClicked.addListener(async () => {
+      try {
+        if (typeof browser.runtime.openOptionsPage === 'function') {
+          await browser.runtime.openOptionsPage();
+        } else {
+          const url = browser.runtime.getURL('pages/settings/settings.html');
+          chrome.tabs.create({ url });
+        }
+      } catch (e) {
+        console.error('[Livemarks] failed to open options page from browserAction', e);
+      }
+    });
+  }
+} catch (e) {
+  console.warn('[Livemarks] browserAction click handler not registered', e);
+}

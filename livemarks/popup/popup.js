@@ -36,30 +36,55 @@ function getFeeds(tabId) {
 async function main() {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   const feeds = await getFeeds(tab.id);
-  if (feeds.length == 1) {
+  if (feeds && feeds.length == 1) {
     // Only one feed, no need for a bubble; go straight to the subscribe page.
     preview(feeds[0].href);
   } else {
     const content = document.getElementById("content");
-
-    const feedList = document.createElement("ul");
-    feedList.className = "feedList";
-    for (const feed of feeds) {
-      const item = document.createElement("li");
-      const link = document.createElement("a");
-      const url = feed.href;
-      link.href = url;
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        preview(url);
-      });
-      link.textContent = feed.title ? feed.title
-        : url.replace(/^https?:\/\//i, "");
-      item.appendChild(link);
-      feedList.appendChild(item);
+    if (feeds && feeds.length > 0) {
+      const feedList = document.createElement("ul");
+      feedList.className = "feedList";
+      for (const feed of feeds) {
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        const url = feed.href;
+        link.href = url;
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          preview(url);
+        });
+        link.textContent = feed.title ? feed.title
+          : url.replace(/^https?:\/\//i, "");
+        item.appendChild(link);
+        feedList.appendChild(item);
+      }
+      content.appendChild(feedList);
+    } else {
+      const msg = document.createElement('div');
+      msg.style.padding = '8px 16px';
+      msg.textContent = 'このページから検出されたフィードはありません。';
+      content.appendChild(msg);
     }
-
-    content.appendChild(feedList);
+    // Add a link to open the options page
+    const opts = document.createElement('div');
+    opts.style.padding = '6px 16px';
+    opts.style.borderTop = '1px solid rgba(0,0,0,0.1)';
+    const btn = document.createElement('button');
+    btn.textContent = 'オプションを開く';
+    btn.className = 'button';
+    btn.onclick = async () => {
+      try {
+        if (typeof browser.runtime.openOptionsPage === 'function') {
+          await browser.runtime.openOptionsPage();
+        } else {
+          const url = browser.runtime.getURL('pages/settings/settings.html');
+          chrome.tabs.create({ url });
+        }
+        window.close();
+      } catch (e) { console.error('[Livemarks] open options failed', e); }
+    };
+    opts.appendChild(btn);
+    content.appendChild(opts);
   }
 }
 
