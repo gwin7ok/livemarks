@@ -58,23 +58,6 @@ const LivemarkUpdater = {
     }
   },
   async historyOnVisited(item) {
-    const hash = hashString(item.url);
-    const entry = this.itemURLHashToFeeds.get(hash);
-
-    if (entry === undefined) {
-      return;
-    }
-
-    for (const bookmarkId of entry) {
-      if (await LivemarkStore.isLivemarkFolder(bookmarkId)) {
-        const feed = await LivemarkStore.getDetails(bookmarkId);
-        await this.updateLivemark(feed, { forceUpdate: true });
-      }
-      entry.delete(bookmarkId);
-      if (entry.size === 0) {
-        this.itemURLHashToFeeds.delete(hash);
-      }
-    }
     try {
       const hash = hashString(item.url);
 
