@@ -598,6 +598,8 @@ chrome.tabs.onRemoved.addListener(function (tabId) {
   delete tabIdToFeeds[tabId];
 });
 
+// Toolbar context menu entry removed per request.
+
 chrome.webRequest.onHeadersReceived.addListener(details => {
   if (!FeedPreview.enabled) {
     // Feed preview disabled, nothing to do here.
